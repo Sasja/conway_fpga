@@ -105,3 +105,110 @@ begin
   end process;
 
 end behave;
+
+--------------------------------------------------
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity golcell2_tb is
+end golcell2_tb;
+
+architecture behave of golcell2_tb is
+  signal r_clk   : std_logic := '1';
+  signal r_left  : std_logic := '0';
+  signal r_right : std_logic := '0';
+  signal r_ntop  : natural range 0 to 3 := 0;
+  signal r_nbot  : natural range 0 to 3 := 0;
+  signal w_hsum  : natural range 0 to 3 := 0;
+  signal w_life  : std_logic := '0';
+
+  -- component declaration for UUT
+  component golcell2 is
+    port (
+      i_clk   : in    std_logic;
+      i_left  : in    std_logic;            -- state of cell to the left
+      i_right : in    std_logic;            -- state of cell to the right
+      i_ntop  : in    natural range 0 to 3; -- n living cells on row above
+      i_nbot  : in    natural range 0 to 3; -- n living cells on row below
+      o_hsum  : out   natural range 0 to 3; -- n living cells on own row
+      o_life  : inout std_logic );
+  end component golcell2;
+
+begin
+  UUT : golcell2
+    port map (
+      i_clk   => r_clk,
+      i_left  => r_left,
+      i_right => r_right,
+      i_ntop  => r_ntop,
+      i_nbot  => r_nbot,
+      o_hsum  => w_hsum,
+      o_life  => w_life );
+
+  process
+    type t_pattern is record
+      i_clk   : std_logic;
+      i_left  : std_logic;
+      i_right : std_logic;
+      i_ntop  : natural range 0 to 3;
+      i_nbot  : natural range 0 to 3;
+      o_hsum  : natural range 0 to 3;
+      o_life  : std_logic;
+    end record;
+
+    type t_pattern_array is array (natural range <>) of t_pattern;
+    constant patterns : t_pattern_array :=
+    --clk     L   R    out: T B  rsum    life
+    (('0',   '0','0',       0,0,  0,     '0'),  -- count when dead
+     ('0',   '1','0',       0,0,  1,     '0'),
+     ('0',   '0','1',       0,0,  1,     '0'),
+     ('0',   '1','1',       0,0,  2,     '0'),
+
+     ('0',   '1','1',       1,0,  2,     '0'),  -- rehydrate! (resurect on 3)
+     ('1',   '1','1',       1,0,  3,     '1'),
+
+     ('0',   '0','0',       0,0,  1,     '1'),  -- count when alive
+     ('0',   '1','0',       0,0,  2,     '1'),
+     ('0',   '0','1',       0,0,  2,     '1'),
+     ('0',   '1','1',       0,0,  3,     '1'),
+
+     ('0',   '1','1',       1,0,  3,     '1'),
+     ('1',   '1','1',       1,0,  3,     '1'),  -- survive on 3
+     ('0',   '0','0',       1,1,  1,     '1'),
+     ('1',   '0','0',       1,1,  1,     '1'),  -- survive on 2
+
+     ('0',   '1','1',       1,1,  3,     '1'),
+     ('1',   '1','1',       1,1,  2,     '0'),  -- dehydrate! (die on 4)
+
+     ('0',   '0','0',       0,0,  0,     '0'),
+     ('1',   '1','1',       1,0,  2,     '0'),  -- dont act on current count
+     ('0',   '1','1',       1,0,  2,     '0'),
+     ('1',   '0','0',       0,0,  1,     '1'),  -- act on pre-clock count
+
+     ('0',   '0','0',       0,0,  1,     '1'),  -- blah
+     ('1',   '0','0',       0,0,  0,     '0'));
+    begin
+
+    for i in patterns'range loop
+      r_clk   <= patterns(i).i_clk;
+      r_left  <= patterns(i).i_left;
+      r_right <= patterns(i).i_right;
+      r_ntop  <= patterns(i).i_ntop;
+      r_nbot  <= patterns(i).i_nbot;
+
+      wait for 1 ns;
+
+      assert w_hsum = patterns(i).o_hsum
+        report "bad row sum output" severity error;
+      assert w_life = patterns(i).o_life
+        report "bad life status output" severity error;
+
+    end loop;
+
+    assert false report "end of test" severity note;
+    wait;
+
+  end process;
+end behave;

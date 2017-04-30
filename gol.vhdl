@@ -51,3 +51,59 @@ architecture rtl of golcell is
     end process;
 
 end rtl;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity golcell2 is
+  port (
+    i_clk   : in    std_logic;
+    i_left  : in    std_logic;            -- state of cell to the left
+    i_right : in    std_logic;            -- state of cell to the right
+    i_ntop  : in    natural range 0 to 3; -- n living cells on row above
+    i_nbot  : in    natural range 0 to 3; -- n living cells on row below
+    o_hsum  : out   natural range 0 to 3; -- n living cells on own row
+    o_life  : inout std_logic := '0');
+end golcell2;
+
+architecture rtl of golcell2 is
+  signal nneighb : natural range 0 to 8;
+
+  begin
+
+    -- count the amount of living cells on own row
+    process (i_left, i_right, o_life) is
+      variable cnt : natural range 0 to 3;
+      begin
+        cnt := 0;
+        if i_left  = '1' then cnt := cnt + 1; end if;
+        if i_right = '1' then cnt := cnt + 1; end if;
+        if o_life  = '1' then cnt := cnt + 1; end if;
+        o_hsum <= cnt;
+    end process;
+
+    -- count the amount of living cells around this cell
+    process (i_left, i_right, i_ntop, i_nbot) is
+      variable cnt : natural range 0 to 8;
+      begin
+        cnt := i_ntop + i_nbot;
+        if i_left  = '1' then cnt := cnt + 1; end if;
+        if i_right = '1' then cnt := cnt + 1; end if;
+        nneighb <= cnt;
+    end process;
+
+    -- to be or not to be on the rising edge
+    process (i_clk) is
+      begin
+        if rising_edge(i_clk) then
+          if (nneighb = 3) or (nneighb = 2 and o_life = '1') then
+            o_life <= '1';
+          else
+            o_life <= '0';
+          end if;
+
+        end if;
+    end process;
+
+end rtl;
