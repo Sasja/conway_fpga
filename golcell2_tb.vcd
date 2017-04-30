@@ -1,0 +1,193 @@
+$date
+  Sun Apr 30 16:36:55 2017
+$end
+$version
+  GHDL v0
+$end
+$timescale
+  1 fs
+$end
+$var reg 1 ! r_clk $end
+$var reg 1 " r_left $end
+$var reg 1 # r_right $end
+$var integer 32 $ r_ntop $end
+$var integer 32 % r_nbot $end
+$var integer 32 & w_hsum $end
+$var reg 1 ' w_life $end
+$scope module uut $end
+$var reg 1 ( i_clk $end
+$var reg 1 ) i_left $end
+$var reg 1 * i_right $end
+$var integer 32 + i_ntop $end
+$var integer 32 , i_nbot $end
+$var integer 32 - o_hsum $end
+$var reg 1 . o_life $end
+$var integer 32 / nneighb $end
+$upscope $end
+$enddefinitions $end
+#0
+0!
+0"
+0#
+b0 $
+b0 %
+b0 &
+0'
+0(
+0)
+0*
+b0 +
+b0 ,
+b0 -
+0.
+b0 /
+#1000000
+1"
+b1 &
+1)
+b1 -
+b1 /
+#2000000
+0"
+1#
+0)
+1*
+#3000000
+1"
+b10 &
+1)
+b10 -
+b10 /
+#4000000
+b1 $
+b1 +
+b11 /
+#5000000
+1!
+b11 &
+1'
+1(
+b11 -
+1.
+#6000000
+0!
+0"
+0#
+b0 $
+b1 &
+0(
+0)
+0*
+b0 +
+b1 -
+b0 /
+#7000000
+1"
+b10 &
+1)
+b10 -
+b1 /
+#8000000
+0"
+1#
+0)
+1*
+#9000000
+1"
+b11 &
+1)
+b11 -
+b10 /
+#10000000
+b1 $
+b1 +
+b11 /
+#11000000
+1!
+1(
+#12000000
+0!
+0"
+0#
+b1 %
+b1 &
+0(
+0)
+0*
+b1 ,
+b1 -
+b10 /
+#13000000
+1!
+1(
+#14000000
+0!
+1"
+1#
+b11 &
+0(
+1)
+1*
+b11 -
+b100 /
+#15000000
+1!
+b10 &
+0'
+1(
+b10 -
+0.
+#16000000
+0!
+0"
+0#
+b0 $
+b0 %
+b0 &
+0(
+0)
+0*
+b0 +
+b0 ,
+b0 -
+b0 /
+#17000000
+1!
+1"
+1#
+b1 $
+b10 &
+1(
+1)
+1*
+b1 +
+b10 -
+b11 /
+#18000000
+0!
+0(
+#19000000
+1!
+0"
+0#
+b0 $
+b1 &
+1'
+1(
+0)
+0*
+b0 +
+b1 -
+1.
+b0 /
+#20000000
+0!
+0(
+#21000000
+1!
+b0 &
+0'
+1(
+b0 -
+0.
+#22000000
