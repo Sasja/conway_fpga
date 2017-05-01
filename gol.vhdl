@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- first attempt at a game of life cell implementation
 entity golcell is
   port (
     i_clk  : in    std_logic;
@@ -52,10 +53,16 @@ architecture rtl of golcell is
 
 end rtl;
 
-library ieee;
+----------------------------------------------------------------------
+
+library ieee; -- you have to repeat this for every entity??
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- second approach to a game of life cell
+--   Attempt to reuse some counting logic between cells.
+--   Now each cell only needs to communicate with 4 neighbours
+--   instead of all 8.
 entity golcell2 is
   port (
     i_clk   : in    std_logic;
