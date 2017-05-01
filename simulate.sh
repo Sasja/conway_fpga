@@ -4,7 +4,7 @@
 #ghdl -c *.vhdl -r golcell_tb --vcd=golcell_tb.vcd --stop-time=1ms --disp-time
 
 # 2nd implementation
-ghdl -c *.vhdl -r golcell2_tb --vcd=golcell2_tb.vcd --stop-time=1ms --disp-time
+#ghdl -c *.vhdl -r golcell2_tb --vcd=golcell2_tb.vcd --stop-time=1ms --disp-time
 
-# stiching cells together (wip)
-#ghdl -c *.vhdl -r gol_tb --vcd=gol_tb.vcd --stop-time=1ms --disp-time
+# shifter
+ghdl -c *.vhdl -r shifter_tb --vcd=shifter_tb.vcd --stop-time=1ms --disp-time

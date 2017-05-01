@@ -127,14 +127,36 @@ end rtl;
 
 ----------------------------------------------------------------------
 
--- library ieee; -- you have to repeat this for every entity??
--- use ieee.std_logic_1164.all;
--- use ieee.numeric_std.all;
--- 
--- -- see if we can hook some golcell2's up to each other
--- entity gol is
---   port (
---     i_clk   : in    std_logic;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
---     ... i dunno need to go back and learn more syntax first!
--- 
+-- a shift register required to clock in/out the state of the gol board
+entity shifter is
+  generic (
+    g_width : natural );
+  port (
+    i_clk : in    std_logic;
+    i_in  : in    std_logic;
+    o_val : inout std_logic_vector(g_width-1 downto 0) );
+end shifter;
+
+architecture rtl of shifter is
+  begin
+
+    process (i_clk) is
+      begin
+        if rising_edge(i_clk) then
+          o_val(0) <= i_in;
+        end if;
+    end process;
+
+    SHIFTERBODY : for i in 1 to g_width-1 generate
+      process (i_clk) is
+        begin
+          if rising_edge(i_clk) then
+            o_val(i) <= o_val(i-1);
+          end if;
+      end process;
+    end generate SHIFTERBODY;
+end rtl;

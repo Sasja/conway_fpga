@@ -222,3 +222,86 @@ begin
 
   end process;
 end behave;
+
+--------------------------------------------------
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity shifter_tb is
+end shifter_tb;
+
+
+architecture behave of shifter_tb is
+
+  constant c_width : natural := 8;
+
+  signal r_clk : std_logic;
+  signal r_in  : std_logic;
+  signal w_val : std_logic_vector(c_width-1 downto 0);
+
+  component shifter is
+    generic (
+      g_width : natural );
+    port (
+      i_clk : in    std_logic;
+      i_in  : in    std_logic;
+      o_val : inout std_logic_vector(g_width-1 downto 0) );
+  end component shifter;
+
+  begin
+    UUT : shifter
+      generic map (
+        g_width => c_width )
+      port map (
+        i_clk => r_clk,
+        i_in  => r_in,
+        o_val => w_val );
+
+  -- start tests
+  process is
+    type t_pattern is record
+      i_clk : std_logic;
+      i_in  : std_logic;
+      o_val : std_logic_vector(c_width-1 downto 0);
+    end record;
+
+    type t_pattern_array is array (natural range <>) of t_pattern;
+    constant patterns : t_pattern_array :=
+    (('0','0',"UUUUUUUU"),
+     ('1','0',"UUUUUUU0"),
+     ('0','0',"UUUUUUU0"),
+     ('1','0',"UUUUUU00"),
+     ('0','0',"UUUUUU00"),
+     ('1','0',"UUUUU000"),
+     ('0','0',"UUUUU000"),
+     ('1','0',"UUUU0000"),
+     ('0','0',"UUUU0000"),
+     ('1','0',"UUU00000"),
+     ('0','0',"UUU00000"),
+     ('1','0',"UU000000"),
+     ('0','1',"UU000000"),
+     ('1','1',"U0000001"),
+     ('0','1',"U0000001"),
+     ('1','1',"00000011"),
+     ('0','1',"00000011"),
+     ('1','1',"00000111"),
+     ('0','1',"00000111"),
+     ('1','1',"00001111"),
+     ('0','1',"00001111"));
+  begin
+    for i in patterns'range loop
+      r_clk <= patterns(i).i_clk;
+      r_in  <= patterns(i).i_in;
+      wait for 1 ns;
+      assert w_val = patterns(i).o_val
+        report "wrong shifter value" severity error;
+    end loop;
+
+    assert false report "end of test" severity note;
+    wait;
+
+  end process;
+
+end architecture;
