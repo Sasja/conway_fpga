@@ -94,7 +94,7 @@ architecture rtl of golcell is
 
     -- question?? this seems required to look at value before clk change
     -- instead of after. What is the deal? What does it do exactly
-    w_i_set  <= i_set;  
+    w_i_set  <= i_set;
     w_i_life <= i_life;
 
     -- count the amount of living cells on own row
@@ -140,7 +140,7 @@ end rtl;
 
 -- a shift register required to clock in/out the state of the gol board
 
-library ieee;   -- do you have to repeat this always?
+library ieee;   -- do you have to repeat this every time?
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
@@ -194,22 +194,54 @@ end rtl;
 
 ----------------------------------------------------------------------
 
--- a shift matrix(?) built from shift registers to get the gol pattern
--- in and out of the playingfield
+-- a column of connected golcells with attached flipflop for shifting
+-- in/oud and loading/retrieving a pattern into the playing field
+-- the cells are vertically connected so only the left and right
+-- connections are open (two per cell)
 
--- library ieee;   -- do you have to repeat this always?
--- use ieee.std_logic_1164.all;
--- use ieee.numeric_std.all;
--- 
--- entity shiftmatrix is
---   generic (
---     g_columns : natural,
---     g_height  : natural );
---   port (
---     i_clk : in    std_logic;
---     i_
--- 
--- end shiftmatrix;
--- 
--- architecture rtl of shiftmatrix is
--- end rtl;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity golcolumn is
+  generic (
+    g_height  : natural );
+  port (
+    i_clk    : in    std_logic;
+
+    i_load   : in    std_logic;     -- '1': flipflops => golcells
+
+    i_move   : in    std_logic;     -- '1' to shift down or flipflops <= golcels
+    i_msel   : in    std_logic;     -- '0'/'1' to shift/retrieve if i_move
+
+    i_left   : in    std_logic_vector(g_height-1 downto 0); -- connect to left
+    i_right  : in    std_logic_vector(g_height-1 downto 0); -- connect to right
+
+    o_life   : inout std_logic_vector(g_height-1 downto 0) );
+
+end golcolumn;
+
+architecture rtl of shiftmatrix is
+begin
+end rtl;
+
+----------------------------------------------------------------------
+-- TODO: a stack of interconnected golcolumn's sandwiched between two
+--       regular shift registers creating life!
+----------------------------------------------------------------------
+-- TODO: get some vga out!?
+----------------------------------------------------------------------
+-- note: each life cycle takes 1 clock cycle but getting the data out
+--       will take W x H cycles.
+--
+-- idea: attach a counter to each cell to sum the amount of life when
+--       doing more cycles within one displayed frame
+----------------------------------------------------------------------
+-- note: this will not scale well with big gol playfields.
+--
+-- idea: fold the field upon itself 2 times so no need to connect
+--       outer edges, each hardware cell should do 4 actual cells then,
+--       if you add some memory to the edges you can also reuse the
+--       logic and do the computation sequentially in 4 clock cycles.
+--       Should work with 16 or 256 clock cycles as well. good luck :P
+----------------------------------------------------------------------
