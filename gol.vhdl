@@ -135,3 +135,6 @@ end rtl;
 -- entity gol is
 --   port (
 --     i_clk   : in    std_logic;
+
+--     ... i dunno need to go back and learn more syntax first!
+-- 
