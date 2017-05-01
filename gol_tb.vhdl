@@ -128,7 +128,9 @@ architecture behave of shifter_tb is
   constant c_width : natural := 8;
 
   signal r_clk : std_logic;
+  signal r_set : std_logic;
   signal r_in  : std_logic;
+  signal r_val : std_logic_vector(c_width-1 downto 0);
   signal w_val : std_logic_vector(c_width-1 downto 0);
 
   component shifter is
@@ -136,7 +138,9 @@ architecture behave of shifter_tb is
       g_width : natural );
     port (
       i_clk : in    std_logic;
+      i_set : in    std_logic; -- if set '1' take input from i_val
       i_in  : in    std_logic;
+      i_val : in    std_logic_vector(g_width-1 downto 0);
       o_val : inout std_logic_vector(g_width-1 downto 0) );
   end component shifter;
 
@@ -146,45 +150,60 @@ architecture behave of shifter_tb is
         g_width => c_width )
       port map (
         i_clk => r_clk,
+        i_set => r_set,
         i_in  => r_in,
+        i_val => r_val,
         o_val => w_val );
 
   -- start tests
   process is
     type t_pattern is record
       i_clk : std_logic;
+      i_set : std_logic;
       i_in  : std_logic;
+      i_val : std_logic_vector(c_width-1 downto 0);
       o_val : std_logic_vector(c_width-1 downto 0);
     end record;
 
     type t_pattern_array is array (natural range <>) of t_pattern;
     constant patterns : t_pattern_array :=
-    -- clk  in    value
-    (( '0', '0',"UUUUUUUU" ),
-     ( '1', '0',"UUUUUUU0" ),
-     ( '0', '0',"UUUUUUU0" ),
-     ( '1', '0',"UUUUUU00" ),
-     ( '0', '0',"UUUUUU00" ),
-     ( '1', '0',"UUUUU000" ),
-     ( '0', '0',"UUUUU000" ),
-     ( '1', '0',"UUUU0000" ),
-     ( '0', '0',"UUUU0000" ),
-     ( '1', '0',"UUU00000" ),
-     ( '0', '0',"UUU00000" ),
-     ( '1', '0',"UU000000" ),
-     ( '0', '1',"UU000000" ),
-     ( '1', '1',"U0000001" ),
-     ( '0', '1',"U0000001" ),
-     ( '1', '1',"00000011" ),
-     ( '0', '1',"00000011" ),
-     ( '1', '1',"00000111" ),
-     ( '0', '1',"00000111" ),
-     ( '1', '1',"00001111" ),
-     ( '0', '1',"00001111" ));
+    -- clk  set  in    i_val       o_val
+    (( '0', '0', '0',"00000000", "UUUUUUUU" ),  -- shifting 0's
+     ( '1', '0', '0',"00000000", "UUUUUUU0" ),
+     ( '0', '0', '0',"00000000", "UUUUUUU0" ),
+     ( '1', '0', '0',"00000000", "UUUUUU00" ),
+     ( '0', '0', '0',"00000000", "UUUUUU00" ),
+     ( '1', '0', '0',"00000000", "UUUUU000" ),
+     ( '0', '0', '0',"00000000", "UUUUU000" ),
+     ( '1', '0', '0',"00000000", "UUUU0000" ),
+     ( '0', '0', '0',"00000000", "UUUU0000" ),
+     ( '1', '0', '0',"00000000", "UUU00000" ),
+     ( '0', '0', '0',"00000000", "UUU00000" ),
+     ( '1', '0', '0',"00000000", "UU000000" ),
+     ( '0', '0', '1',"00000000", "UU000000" ),  -- add some 1's
+     ( '1', '0', '1',"00000000", "U0000001" ),
+     ( '0', '0', '1',"00000000", "U0000001" ),
+     ( '1', '0', '1',"00000000", "00000011" ),
+     ( '0', '0', '1',"00000000", "00000011" ),
+     ( '1', '0', '1',"00000000", "00000111" ),
+     ( '0', '0', '1',"00000000", "00000111" ),
+     ( '1', '0', '1',"00000000", "00001111" ),
+
+     ( '0', '1', '0',"10111000", "10111000" ),  -- set overrides
+     ( '1', '1', '0',"10111000", "10111000" ),  -- set overrides clock
+
+     ( '0', '0', '0',"10111000", "10111000" ),
+     ( '1', '0', '0',"00000000", "01110000" ),  -- shift away
+     ( '0', '0', '0',"00000000", "01110000" ),
+     ( '1', '0', '0',"00000000", "11100000" ),
+     ( '0', '0', '0',"00000000", "11100000" ),
+     ( '1', '0', '0',"00000000", "11000000" ));
   begin
     for i in patterns'range loop
       r_clk <= patterns(i).i_clk;
+      r_set <= patterns(i).i_set;
       r_in  <= patterns(i).i_in;
+      r_val <= patterns(i).i_val;
       wait for 1 ns;
       assert w_val = patterns(i).o_val
         report "wrong shifter value" severity error;

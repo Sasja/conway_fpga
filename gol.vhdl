@@ -140,7 +140,9 @@ entity shifter is
     g_width : natural );
   port (
     i_clk : in    std_logic;
+    i_set : in    std_logic; -- if set '1' take input from i_val
     i_in  : in    std_logic;
+    i_val : in    std_logic_vector(g_width-1 downto 0);
     o_val : inout std_logic_vector(g_width-1 downto 0) );
 end shifter;
 
@@ -149,17 +151,27 @@ architecture rtl of shifter is
 
     process (i_clk) is
       begin
-        if rising_edge(i_clk) then
-          o_val(0) <= i_in;
+        if i_set = '0' then
+          if rising_edge(i_clk) then
+            o_val(0) <= i_in;
+          end if;
+        else
+          o_val(0) <= i_val(0);
         end if;
     end process;
 
     SHIFTERBODY : for i in 1 to g_width-1 generate
       process (i_clk) is
         begin
-          if rising_edge(i_clk) then
-            o_val(i) <= o_val(i-1);
+          if i_set = '0' then
+            if rising_edge(i_clk) then
+              o_val(i) <= o_val(i-1);
+            end if;
+          else
+            o_val(i) <= i_val(i);
           end if;
       end process;
     end generate SHIFTERBODY;
 end rtl;
+
+----------------------------------------------------------------------
