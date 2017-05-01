@@ -116,18 +116,22 @@ entity golcell2_tb is
 end golcell2_tb;
 
 architecture behave of golcell2_tb is
-  signal r_clk   : std_logic := '1';
-  signal r_left  : std_logic := '0';
-  signal r_right : std_logic := '0';
-  signal r_ntop  : natural range 0 to 3 := 0;
-  signal r_nbot  : natural range 0 to 3 := 0;
-  signal w_hsum  : natural range 0 to 3 := 0;
-  signal w_life  : std_logic := '0';
+  signal r_clk   : std_logic;
+  signal r_set   : std_logic;
+  signal r_life  : std_logic;
+  signal r_left  : std_logic;
+  signal r_right : std_logic;
+  signal r_ntop  : natural range 0 to 3;
+  signal r_nbot  : natural range 0 to 3;
+  signal w_hsum  : natural range 0 to 3;
+  signal w_life  : std_logic;
 
   -- component declaration for UUT
   component golcell2 is
     port (
       i_clk   : in    std_logic;
+      i_set   : in    std_logic;            -- '1' to o_life <= i_life on rising clock
+      i_life  : in    std_logic;            -- state input (use with i_set)
       i_left  : in    std_logic;            -- state of cell to the left
       i_right : in    std_logic;            -- state of cell to the right
       i_ntop  : in    natural range 0 to 3; -- n living cells on row above
@@ -140,6 +144,8 @@ begin
   UUT : golcell2
     port map (
       i_clk   => r_clk,
+      i_set   => r_set,
+      i_life  => r_life,
       i_left  => r_left,
       i_right => r_right,
       i_ntop  => r_ntop,
@@ -150,6 +156,8 @@ begin
   process
     type t_pattern is record
       i_clk   : std_logic;
+      i_set   : std_logic;
+      i_life  : std_logic;
       i_left  : std_logic;
       i_right : std_logic;
       i_ntop  : natural range 0 to 3;
@@ -160,39 +168,41 @@ begin
 
     type t_pattern_array is array (natural range <>) of t_pattern;
     constant patterns : t_pattern_array :=
-    --clk     L   R    out: T B  rsum    life
-    (('0',   '0','0',       0,0,  0,     '0'),  -- count when dead
-     ('0',   '1','0',       0,0,  1,     '0'),
-     ('0',   '0','1',       0,0,  1,     '0'),
-     ('0',   '1','1',       0,0,  2,     '0'),
+    --clk  set i_life   L   R    out: T B  rsum   o_life
+    (('0', '0' ,'0',   '0','0',       0,0,  0,     'U'),  -- initial status
 
-     ('0',   '1','1',       1,0,  2,     '0'),  -- rehydrate! (resurect on 3)
-     ('1',   '1','1',       1,0,  3,     '1'),
+     ('0', '1' ,'0',   '0','0',       0,0,  0,     '0'),  -- set life '0'
+     ('0', '0' ,'0',   '0','0',       0,0,  0,     '0'),  -- test counter when '0'
+     ('0', '0' ,'0',   '1','0',       0,0,  1,     '0'),
+     ('0', '0' ,'0',   '0','1',       0,0,  1,     '0'),
+     ('0', '0' ,'0',   '1','1',       0,0,  2,     '0'),
 
-     ('0',   '0','0',       0,0,  1,     '1'),  -- count when alive
-     ('0',   '1','0',       0,0,  2,     '1'),
-     ('0',   '0','1',       0,0,  2,     '1'),
-     ('0',   '1','1',       0,0,  3,     '1'),
+     ('0', '1' ,'1',   '0','0',       0,0,  1,     '1'),  -- set life '1'
+     ('0', '0' ,'0',   '0','0',       0,0,  1,     '1'),  -- count when alive
+     ('0', '0' ,'0',   '1','0',       0,0,  2,     '1'),
+     ('0', '0' ,'0',   '0','1',       0,0,  2,     '1'),
+     ('0', '0' ,'0',   '1','1',       0,0,  3,     '1'),
 
-     ('0',   '1','1',       1,0,  3,     '1'),
-     ('1',   '1','1',       1,0,  3,     '1'),  -- survive on 3
-     ('0',   '0','0',       1,1,  1,     '1'),
-     ('1',   '0','0',       1,1,  1,     '1'),  -- survive on 2
+     ('0', '1' ,'1',   '0','0',       0,0,  1,     '1'),  -- set life '1'
+     ('0', '0' ,'1',   '1','1',       1,0,  3,     '1'),  -- rest/prepare 3
+     ('1', '0' ,'0',   '1','1',       1,0,  3,     '1'),  -- survive on 3
+     ('0', '0' ,'0',   '0','0',       1,1,  1,     '1'),  -- prepare 2
+     ('1', '0' ,'0',   '0','0',       1,1,  1,     '1'),  -- survive on 2
+     ('0', '0' ,'0',   '1','1',       1,1,  3,     '1'),  -- prepare 4
+     ('1', '0' ,'0',   '1','1',       1,1,  2,     '0'),  -- dehydrate! (die on 4)
 
-     ('0',   '1','1',       1,1,  3,     '1'),
-     ('1',   '1','1',       1,1,  2,     '0'),  -- dehydrate! (die on 4)
+     ('0', '0' ,'0',   '0','0',       0,0,  0,     '0'),  -- prepare 0
+     ('1', '0' ,'0',   '1','1',       1,0,  2,     '0'),  -- dont act on current count (n=3)
+     ('0', '0' ,'0',   '1','1',       1,0,  2,     '0'),  -- prepare 3
+     ('1', '0' ,'0',   '0','0',       0,0,  1,     '1'),  -- act on pre-clock count
 
-     ('0',   '0','0',       0,0,  0,     '0'),
-     ('1',   '1','1',       1,0,  2,     '0'),  -- dont act on current count
-     ('0',   '1','1',       1,0,  2,     '0'),
-     ('1',   '0','0',       0,0,  1,     '1'),  -- act on pre-clock count
-
-     ('0',   '0','0',       0,0,  1,     '1'),  -- blah
-     ('1',   '0','0',       0,0,  0,     '0'));
+     ('0', '1' ,'0',   '0','0',       0,0,  0,     '0')); -- blah
     begin
 
     for i in patterns'range loop
       r_clk   <= patterns(i).i_clk;
+      r_set   <= patterns(i).i_set;
+      r_life  <= patterns(i).i_life;
       r_left  <= patterns(i).i_left;
       r_right <= patterns(i).i_right;
       r_ntop  <= patterns(i).i_ntop;

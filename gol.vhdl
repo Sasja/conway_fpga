@@ -63,15 +63,22 @@ use ieee.numeric_std.all;
 --   Attempt to reuse some counting logic between cells.
 --   Now each cell only needs to communicate with 4 neighbours
 --   instead of all 8.
+--   Also add a way to externally set life value.
 entity golcell2 is
   port (
     i_clk   : in    std_logic;
+
+    i_set   : in    std_logic;            -- '1' to o_life <= i_life
+    i_life  : in    std_logic;            -- state input (use with i_set)
+
     i_left  : in    std_logic;            -- state of cell to the left
     i_right : in    std_logic;            -- state of cell to the right
+
     i_ntop  : in    natural range 0 to 3; -- n living cells on row above
     i_nbot  : in    natural range 0 to 3; -- n living cells on row below
+
     o_hsum  : out   natural range 0 to 3; -- n living cells on own row
-    o_life  : inout std_logic := '0');
+    o_life  : inout std_logic);
 end golcell2;
 
 architecture rtl of golcell2 is
@@ -101,16 +108,30 @@ architecture rtl of golcell2 is
     end process;
 
     -- to be or not to be on the rising edge
-    process (i_clk) is
+    process (i_clk, i_set, i_life) is
       begin
-        if rising_edge(i_clk) then
-          if (nneighb = 3) or (nneighb = 2 and o_life = '1') then
-            o_life <= '1';
-          else
-            o_life <= '0';
+        if i_set = '0' then   -- folow gol rules on clock
+          if rising_edge(i_clk) then
+            if (nneighb = 3) or (nneighb = 2 and o_life = '1') then
+              o_life <= '1';
+            else
+              o_life <= '0';
+            end if;
           end if;
-
+        else                  -- just follow i_life anytime
+          o_life <= i_life;
         end if;
     end process;
 
 end rtl;
+
+----------------------------------------------------------------------
+
+-- library ieee; -- you have to repeat this for every entity??
+-- use ieee.std_logic_1164.all;
+-- use ieee.numeric_std.all;
+-- 
+-- -- see if we can hook some golcell2's up to each other
+-- entity gol is
+--   port (
+--     i_clk   : in    std_logic;
