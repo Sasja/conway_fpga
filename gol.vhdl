@@ -84,9 +84,18 @@ entity golcell is
 end golcell;
 
 architecture rtl of golcell is
-  signal nneighb : natural range 0 to 8;
+
+  signal w_nneighb : natural range 0 to 8;
+
+  signal w_i_set     : std_logic; -- question see below
+  signal w_i_life    : std_logic;
 
   begin
+
+    -- question?? this seems required to look at value before clk change
+    -- instead of after. What is the deal? What does it do exactly
+    w_i_set  <= i_set;  
+    w_i_life <= i_life;
 
     -- count the amount of living cells on own row
     process (i_left, i_right, o_life) is
@@ -106,22 +115,22 @@ architecture rtl of golcell is
         cnt := i_ntop + i_nbot;
         if i_left  = '1' then cnt := cnt + 1; end if;
         if i_right = '1' then cnt := cnt + 1; end if;
-        nneighb <= cnt;
+        w_nneighb <= cnt;
     end process;
 
-    -- to be or not to be on the rising edge
-    process (i_clk, i_set, i_life) is
+    -- to be or not to be (on the rising edge)
+    process (i_clk) is
       begin
-        if i_set = '0' then   -- folow gol rules on clock
-          if rising_edge(i_clk) then
-            if (nneighb = 3) or (nneighb = 2 and o_life = '1') then
+        if rising_edge(i_clk) then
+          if w_i_set = '0' then   -- follow gol rules if '0'
+            if (w_nneighb = 3) or (w_nneighb = 2 and o_life = '1') then
               o_life <= '1';
             else
               o_life <= '0';
             end if;
+          else                  -- or just store i_life if '1'
+            o_life <= w_i_life;
           end if;
-        else                  -- just follow i_life anytime
-          o_life <= i_life;
         end if;
     end process;
 
@@ -175,3 +184,23 @@ architecture rtl of shifter is
 end rtl;
 
 ----------------------------------------------------------------------
+
+-- a shift matrix(?) built from shift registers to get the gol pattern
+-- in and out of the playingfield
+
+-- library ieee;   -- do you have to repeat this always?
+-- use ieee.std_logic_1164.all;
+-- use ieee.numeric_std.all;
+-- 
+-- entity shiftmatrix is
+--   generic (
+--     g_columns : natural,
+--     g_height  : natural );
+--   port (
+--     i_clk : in    std_logic;
+--     i_
+-- 
+-- end shiftmatrix;
+-- 
+-- architecture rtl of shiftmatrix is
+-- end rtl;
