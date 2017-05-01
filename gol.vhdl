@@ -156,28 +156,37 @@ entity shifter is
 end shifter;
 
 architecture rtl of shifter is
+
+  signal w_i_set : std_logic;
+  signal w_i_in  : std_logic;
+  signal w_i_val : std_logic_vector(g_width-1 downto 0);
+
   begin
+
+    w_i_set <= i_set;   -- again, im not quite sure what
+    w_i_in  <= i_in;    -- this does exactly or how it
+    w_i_val <= i_val;   -- works!?
 
     process (i_clk) is
       begin
-        if i_set = '0' then
-          if rising_edge(i_clk) then
-            o_val(0) <= i_in;
+        if rising_edge(i_clk) then
+          if w_i_set = '0' then
+            o_val(0) <= w_i_in;
+          else
+            o_val(0) <= w_i_val(0);
           end if;
-        else
-          o_val(0) <= i_val(0);
         end if;
     end process;
 
     SHIFTERBODY : for i in 1 to g_width-1 generate
       process (i_clk) is
         begin
-          if i_set = '0' then
-            if rising_edge(i_clk) then
+          if rising_edge(i_clk) then
+            if w_i_set = '0' then
               o_val(i) <= o_val(i-1);
+            else
+              o_val(i) <= w_i_val(i);
             end if;
-          else
-            o_val(i) <= i_val(i);
           end if;
       end process;
     end generate SHIFTERBODY;
