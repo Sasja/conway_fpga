@@ -35,29 +35,15 @@ architecture rtl of golcell is
 
     -- question?? this seems required to look at value before clk change
     -- instead of after. What is the deal? What does it do exactly
+    -- TODO: remove this crap
     w_i_set  <= i_set;
     w_i_life <= i_life;
 
-    -- count the amount of living cells on own row
-    process (i_left, i_right, o_life) is
-      variable cnt : natural range 0 to 3;
-      begin
-        cnt := 0;
-        if i_left  = '1' then cnt := cnt + 1; end if;
-        if i_right = '1' then cnt := cnt + 1; end if;
-        if o_life  = '1' then cnt := cnt + 1; end if;
-        o_hsum <= cnt;
-    end process;
+    -- the typecasting is still somewhat magical to me
+    o_hsum <= to_integer(unsigned'('0'&i_left) + unsigned'('0'&i_right) + unsigned'('0'&o_life)); 
 
-    -- count the amount of living cells around this cell
-    process (i_left, i_right, i_ntop, i_nbot) is
-      variable cnt : natural range 0 to 8;
-      begin
-        cnt := i_ntop + i_nbot;
-        if i_left  = '1' then cnt := cnt + 1; end if;
-        if i_right = '1' then cnt := cnt + 1; end if;
-        w_nneighb <= cnt;
-    end process;
+    -- the typecasting is still somewhat magical to me
+    w_nneighb <= to_integer(i_ntop + i_nbot + unsigned'('0'&i_left) + unsigned'('0'&i_right));
 
     -- to be or not to be (on the rising edge)
     process (i_clk) is
