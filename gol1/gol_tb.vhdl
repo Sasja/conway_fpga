@@ -19,15 +19,15 @@ architecture behave of golcell_tb is
   -- component declaration for UUT
   component golcell is
     port (
-      i_clk   : in    std_logic;
-      i_set   : in    std_logic;            -- '1' to o_life <= i_life on rising clock
-      i_life  : in    std_logic;            -- state input (use with i_set)
-      i_left  : in    std_logic;            -- state of cell to the left
-      i_right : in    std_logic;            -- state of cell to the right
-      i_ntop  : in    natural range 0 to 3; -- n living cells on row above
-      i_nbot  : in    natural range 0 to 3; -- n living cells on row below
-      o_hsum  : out   natural range 0 to 3; -- n living cells on own row
-      o_life  : inout std_logic );
+      i_clk   : in     std_logic;
+      i_set   : in     std_logic;            -- '1' to o_life <= i_life on rising clock
+      i_life  : in     std_logic;            -- state input (use with i_set)
+      i_left  : in     std_logic;            -- state of cell to the left
+      i_right : in     std_logic;            -- state of cell to the right
+      i_ntop  : in     natural range 0 to 3; -- n living cells on row above
+      i_nbot  : in     natural range 0 to 3; -- n living cells on row below
+      o_hsum  : out    natural range 0 to 3; -- n living cells on own row
+      o_life  : buffer std_logic );
   end component golcell;
 
 begin
@@ -139,11 +139,11 @@ architecture behave of shifter_tb is
     generic (
       g_width : natural );
     port (
-      i_clk : in    std_logic;
-      i_set : in    std_logic; -- if set '1' take input from i_val
-      i_in  : in    std_logic;
-      i_val : in    std_logic_vector(g_width-1 downto 0);
-      o_val : inout std_logic_vector(g_width-1 downto 0) );
+      i_clk : in     std_logic;
+      i_set : in     std_logic; -- if set '1' take input from i_val
+      i_in  : in     std_logic;
+      i_val : in     std_logic_vector(g_width-1 downto 0);
+      o_val : buffer std_logic_vector(g_width-1 downto 0) );
   end component shifter;
 
   begin
