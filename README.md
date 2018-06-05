@@ -1,4 +1,1 @@
-# conway_fpga
-implementing game of life in hardware for fun and learning some vhdl
-
-abandoned for conway_fpga2...
+repo migrated to https://gitlab.com/sasja/conway_fpga
